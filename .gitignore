@@ -25,3 +25,7 @@ Thumbs.db
 *.swp
 .idea/
 .vscode/
+
+# ===== 临时构建产物 =====
+# Trae HTML 分享包
+.trae-html-share-packages/
