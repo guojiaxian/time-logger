@@ -1,0 +1,19 @@
+[Unit]
+Description=Time Logger HTTPS Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/applications/time-logger
+Environment=PORT=19001
+ExecStart=/usr/local/bin/node /root/applications/time-logger/server.js
+Restart=always
+RestartSec=5
+TimeoutStopSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=time-logger
+
+[Install]
+WantedBy=multi-user.target

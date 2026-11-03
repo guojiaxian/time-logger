@@ -37,7 +37,11 @@
 time-logger/
 ├── server.js            # 零依赖 Node.js HTTPS 服务器 + 同步备份接口
 ├── package.json
-├── start.sh / stop.sh   # 服务器启停脚本（后台运行，记录 PID 与日志）
+├── scripts/             # systemd 服务单元与启停脚本
+│   ├── time-logger.service
+│   ├── start.sh         # 启动（开机自启 + 崩溃自动重启）
+│   ├── restart.sh       # 重启（保持自动重启）
+│   └── stop.sh          # 完全停止（取消自启与自动重启）
 ├── web/                 # Web 前端（服务端静态目录）
 │   ├── index.html
 │   ├── app.js           # 检测/记录/导出/同步核心逻辑
@@ -57,23 +61,28 @@ time-logger/
 - Node.js ≥ 14
 - OpenSSL（首次运行自动生成自签名证书，有效期 10 年）
 
-### 启动服务器
+### 启动服务器（systemd）
+
+服务以 systemd 单元 `time-logger` 运行，监听 `0.0.0.0:19001`，支持开机自启与崩溃自动重启。
 
 ```bash
-# 方式一：npm
-npm start
+sudo ./scripts/start.sh     # 启动并开启自动重启/开机自启
+sudo ./scripts/restart.sh   # 重启（保持自动重启）
+sudo ./scripts/stop.sh      # 完全停止并取消自启/自动重启
 
-# 方式二：脚本（后台运行）
-./start.sh          # 默认端口 8443，可用 ./start.sh 9443 指定端口
-
-# 停止
-./stop.sh
+# 查看状态与日志
+systemctl status time-logger
+journalctl -u time-logger -f
 ```
+
+`start.sh` / `restart.sh` 会自动把 [scripts/time-logger.service](scripts/time-logger.service) 安装到 `/etc/systemd/system/` 并执行 `daemon-reload`。
+
+临时前台调试也可直接运行 `npm start`（默认端口 19001）。
 
 启动后终端会打印本机局域网地址，手机与电脑连接同一 Wi-Fi/热点，用浏览器打开即可，例如：
 
 ```
-https://192.168.1.100:8443
+https://192.168.1.100:19001
 ```
 
 > 自签名证书首次访问不受信任：Android Chrome 点「高级 → 继续访问」；iOS Safari 点「显示详细信息 → 访问此网站」。
@@ -82,7 +91,7 @@ https://192.168.1.100:8443
 
 | 变量 | 默认值 | 说明 |
 | --- | --- | --- |
-| `PORT` | `8443` | HTTPS 服务端口 |
+| `PORT` | `19001` | HTTPS 服务端口（监听 0.0.0.0） |
 | `SYNC_TOKEN` | 空 | 设置后客户端须在「设置 → 同步令牌」填入相同值才允许同步 |
 
 ### 数据同步与备份
@@ -103,7 +112,7 @@ sync.log       # 服务器侧同步日志
 运维查看示例：
 
 ```bash
-curl -sk https://<本机IP>:8443/api/sync/stats
+curl -sk https://<本机IP>:19001/api/sync/stats
 ```
 
 ## Android 客户端

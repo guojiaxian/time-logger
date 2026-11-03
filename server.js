@@ -13,7 +13,7 @@
  *   sync.log       服务器侧同步日志
  *
  * 用法: node server.js  (或 npm start)
- * 环境变量: PORT (HTTPS端口, 默认8443)
+ * 环境变量: PORT (HTTPS端口, 默认19001, 监听 0.0.0.0)
  *           SYNC_TOKEN (可选; 设置后客户端须在"设置-同步令牌"中填入相同值才允许同步)
  */
 'use strict';
@@ -26,7 +26,8 @@ const crypto = require('crypto');
 const { spawnSync } = require('child_process');
 
 const ROOT = __dirname;
-const HTTPS_PORT = parseInt(process.env.PORT || '8443', 10);
+const HTTPS_PORT = parseInt(process.env.PORT || '19001', 10);
+const HTTPS_HOST = '0.0.0.0';
 const SYNC_TOKEN = process.env.SYNC_TOKEN || '';
 const WEB_DIR = path.join(ROOT, 'web');
 const DATA_DIR = path.join(ROOT, 'data');
@@ -291,12 +292,12 @@ const httpsServer = https.createServer(
 );
 httpsServer.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.error(`端口 ${HTTPS_PORT} 已被占用, 可指定其他端口: PORT=9443 node server.js`);
+    console.error(`端口 ${HTTPS_PORT} 已被占用, 可指定其他端口: PORT=19002 node server.js`);
     process.exit(1);
   }
   throw err;
 });
-httpsServer.listen(HTTPS_PORT, () => {
+httpsServer.listen(HTTPS_PORT, HTTPS_HOST, () => {
   const ips = Object.values(os.networkInterfaces())
     .flat()
     .filter((i) => i && i.family === 'IPv4' && !i.internal)

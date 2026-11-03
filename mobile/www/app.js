@@ -29,7 +29,7 @@
     extraCompMs: 0,       // 附加时间补偿(毫秒)
     theme: 'dark',        // 界面主题: dark 深色 / light 浅色
     syncToken: '',        // 同步令牌(可选, 与服务器 SYNC_TOKEN 环境变量一致)
-    syncServer: '',       // 同步服务器地址(APK离线包用, 如 https://192.168.1.100:8443; 网页版留空用当前站点)
+    syncServer: '',       // 同步服务器地址(APK离线包用, 如 https://192.168.1.100:19001; 网页版留空用当前站点)
   };
 
   // 北京时间 = UTC+8 (1991年后无夏令时, 可用固定偏移精确换算)
@@ -617,7 +617,7 @@
     if (location.protocol === 'https:' && ['localhost', '127.0.0.1'].includes(location.hostname) && !(state.settings.syncServer || '').trim()) {
       // APK离线包默认源为本地 https://localhost, 未配置服务器地址时给出明确提示
       setSyncState('failed', '未配置服务器');
-      syncLog(trigger, '尚未配置同步服务器地址, 请在"设置→同步服务器地址"中填写 (如 https://192.168.1.100:8443)', 'warn');
+      syncLog(trigger, '尚未配置同步服务器地址, 请在"设置→同步服务器地址"中填写 (如 https://192.168.1.100:19001)', 'warn');
       return;
     }
     if (!navigator.onLine) {
