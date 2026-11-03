@@ -13,13 +13,12 @@
  *   sync.log       服务器侧同步日志
  *
  * 用法: node server.js  (或 npm start)
- * 环境变量: PORT (HTTPS端口, 默认8443), HTTP_PORT (跳转端口, 默认8080)
+ * 环境变量: PORT (HTTPS端口, 默认8443)
  *           SYNC_TOKEN (可选; 设置后客户端须在"设置-同步令牌"中填入相同值才允许同步)
  */
 'use strict';
 
 const https = require('https');
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -28,7 +27,6 @@ const { spawnSync } = require('child_process');
 
 const ROOT = __dirname;
 const HTTPS_PORT = parseInt(process.env.PORT || '8443', 10);
-const HTTP_PORT = parseInt(process.env.HTTP_PORT || '8080', 10);
 const SYNC_TOKEN = process.env.SYNC_TOKEN || '';
 const WEB_DIR = path.join(ROOT, 'web');
 const DATA_DIR = path.join(ROOT, 'data');
@@ -314,21 +312,4 @@ httpsServer.listen(HTTPS_PORT, () => {
   if (SYNC_TOKEN) console.log('已启用同步令牌校验 (SYNC_TOKEN)');
   console.log('首次访问证书不受信任: Android Chrome 点"高级-继续访问";');
   console.log('iOS Safari 点"显示详细信息-访问此网站"(如需麦克风请尽量安装/信任证书)');
-});
-
-// HTTP 端口仅做跳转, 方便用户误输 http:// 时自动进入 HTTPS
-const httpServer = http.createServer((req, res) => {
-  const host = (req.headers.host || '').split(':')[0] || 'localhost';
-  res.writeHead(301, { Location: `https://${host}:${HTTPS_PORT}${req.url}` });
-  res.end();
-});
-httpServer.on('error', (err) => {
-  if (err.code === 'EADDRINUSE') {
-    console.log(`提示: HTTP ${HTTP_PORT} 端口被占用, 跳过 HTTP 跳转服务 (不影响 HTTPS 使用)`);
-  } else {
-    console.error('HTTP 跳转服务异常:', err.message);
-  }
-});
-httpServer.listen(HTTP_PORT, () => {
-  console.log(`HTTP ${HTTP_PORT} 端口请求将自动跳转到 HTTPS ${HTTPS_PORT}`);
 });
